@@ -2,7 +2,7 @@ Metadata-Version: 2.4
 Name: docktor
 Version: 0.1.0
 Summary: Smart Dockerfile linter, optimizer, and explainer.
-Author-email: Your Name <you@example.com>
+Author-email: Nash Correia <nashcorreia08@gmail.com>
 Project-URL: Homepage, https://github.com/your-username/docktor
 Project-URL: Bug Tracker, https://github.com/your-username/docktor/issues
 Classifier: Development Status :: 3 - Alpha
@@ -20,6 +20,7 @@ Requires-Python: >=3.8
 Description-Content-Type: text/markdown
 Requires-Dist: click>=8.1.0
 Requires-Dist: rich>=13.0.0
+Requires-Dist: chardet>=5.0.0
 Provides-Extra: dev
 Requires-Dist: pytest>=7.0; extra == "dev"
 Requires-Dist: pytest-cov>=4.0; extra == "dev"
