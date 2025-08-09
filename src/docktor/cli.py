@@ -7,11 +7,11 @@ from rich.console import Console
 from rich.pretty import pprint
 
 from .parser import DockerfileParser
-
+from .reporter import display_issues, console
 from .analyzer import Analyzer
 
-console = Console(stderr=True)
 
+console = Console(stderr=True)
 
 def read_file_with_autodetect(file_path: str) -> Optional[str]:
 
@@ -51,6 +51,8 @@ def cli() -> None:
 @click.argument("dockerfile_path", type=click.Path(exists=True, dir_okay=False, resolve_path=True))
 @click.option("--explain", is_flag=True, default=False, help="Show detailed explanations for each issue found.")
 @click.option("--format", type=click.Choice(['text', 'json']), default='text', help="Choose the output format.")
+
+
 def lint(dockerfile_path: str, explain: bool, format: str) -> None:
     """Analyze a Dockerfile for issues and optimizations."""
     # ... (The first part of the function remains the same) ...
@@ -60,7 +62,6 @@ def lint(dockerfile_path: str, explain: bool, format: str) -> None:
         sys.exit(2)
 
     try:
-        # --- This is the part we are changing ---
         parser = DockerfileParser()
         instructions = parser.parse(content)
 
@@ -69,14 +70,8 @@ def lint(dockerfile_path: str, explain: bool, format: str) -> None:
         
         # 2. Run the analysis
         issues = analyzer.run(instructions)
-
         # 3. Print the results
-        if not issues:
-            console.print("\n[bold green]✅ No issues found. Well done![/bold green]")
-        else:
-            console.print("\n[bold red]🚨 Issues Found:[/bold red]")
-            pprint(issues)
-        
+        display_issues(issues, output_format=format)
         # Exit with 1 if issues were found, 0 otherwise
         sys.exit(1 if issues else 0)
 
