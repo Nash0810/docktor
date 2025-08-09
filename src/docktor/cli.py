@@ -6,10 +6,13 @@ import chardet
 from rich.console import Console
 from rich.pretty import pprint
 from rich.panel import Panel
+from rich.table import Table
 
 from .parser import DockerfileParser
 from .reporter import display_issues, console
 from .analyzer import Analyzer
+
+from .benchmarker import DockerBenchmarker
 
 from .optimizer import DockerfileOptimizer
 
@@ -116,6 +119,54 @@ def optimize(dockerfile_path: str) -> None:
 
     sys.exit(0)
 
+@cli.command()
+@click.argument("original_dockerfile", type=click.Path(exists=True, dir_okay=False, resolve_path=True))
+@click.argument("optimized_dockerfile", type=click.Path(exists=True, dir_okay=False, resolve_path=True))
+def benchmark(original_dockerfile: str, optimized_dockerfile: str):
+    """Benchmarks an original and an optimized Dockerfile."""
+    console.print("🚀 Starting Dockerfile benchmark...")
+    
+    try:
+        benchmarker = DockerBenchmarker()
+        results = []
+
+        # --- Benchmark Original ---
+        original_content = read_file_with_autodetect(original_dockerfile)
+        if original_content:
+            results.append(benchmarker.benchmark(original_content, "docktor-benchmark:original"))
+        
+        # --- Benchmark Optimized ---
+        optimized_content = read_file_with_autodetect(optimized_dockerfile)
+        if optimized_content:
+            results.append(benchmarker.benchmark(optimized_content, "docktor-benchmark:optimized"))
+
+        # --- Display Results Table ---
+        table = Table(title="Benchmark Comparison")
+        table.add_column("Metric", style="cyan")
+        table.add_column("Original", style="magenta")
+        table.add_column("Optimized", style="green")
+        table.add_column("Improvement")
+
+        if len(results) == 2:
+            original_res, optimized_res = results[0], results[1]
+            
+            # Helper for calculating percentage change
+            def get_improvement(original, optimized):
+                if original > 0 and optimized > 0:
+                    change = ((original - optimized) / original) * 100
+                    return f"-[red]{change:.1f}%[/red]" if change > 0 else f"+[green]{-change:.1f}%[/green]"
+                return "N/A"
+
+            table.add_row("Image Size (MB)", f"{original_res.image_size_mb}", f"{optimized_res.image_size_mb}", get_improvement(original_res.image_size_mb, optimized_res.image_size_mb))
+            table.add_row("Layer Count", f"{original_res.layer_count}", f"{optimized_res.layer_count}", get_improvement(original_res.layer_count, optimized_res.layer_count))
+            table.add_row("Build Time (s)", f"{original_res.build_time_seconds}", f"{optimized_res.build_time_seconds}", get_improvement(original_res.build_time_seconds, optimized_res.build_time_seconds))
+
+        console.print(table)
+
+
+    except RuntimeError as e:
+        console.print(f"[bold red]Benchmark Error:[/bold red] {e}")
+        sys.exit(2)
 
 if __name__ == "__main__":
     cli()

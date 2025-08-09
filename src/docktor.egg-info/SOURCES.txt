@@ -7,6 +7,8 @@ src/docktor/cli.py
 src/docktor/explainer.py
 src/docktor/optimizer.py
 src/docktor/parser.py
+src/docktor/reporter.py
+src/docktor/types.py
 src/docktor.egg-info/PKG-INFO
 src/docktor.egg-info/SOURCES.txt
 src/docktor.egg-info/dependency_links.txt

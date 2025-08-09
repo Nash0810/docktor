@@ -16,3 +16,12 @@ class Issue:
 class OptimizationResult:
     optimized_instructions: List['DockerInstruction'] 
     applied_optimizations: List[str]
+
+@dataclass
+class BenchmarkResult:
+
+    image_tag: str
+    image_size_mb: float = 0.0
+    layer_count: int = 0
+    build_time_seconds: float = 0.0
+    error_message: Optional[str] = None

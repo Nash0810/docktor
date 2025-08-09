@@ -21,6 +21,7 @@ Description-Content-Type: text/markdown
 Requires-Dist: click>=8.1.0
 Requires-Dist: rich>=13.0.0
 Requires-Dist: chardet>=5.0.0
+Requires-Dist: docker>=6.0.0
 Provides-Extra: dev
 Requires-Dist: pytest>=7.0; extra == "dev"
 Requires-Dist: pytest-cov>=4.0; extra == "dev"
