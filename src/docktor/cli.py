@@ -5,11 +5,13 @@ import click
 import chardet  
 from rich.console import Console
 from rich.pretty import pprint
+from rich.panel import Panel
 
 from .parser import DockerfileParser
 from .reporter import display_issues, console
 from .analyzer import Analyzer
 
+from .optimizer import DockerfileOptimizer
 
 console = Console(stderr=True)
 
@@ -72,7 +74,7 @@ def lint(dockerfile_path: str, explain: bool, format: str) -> None:
         issues = analyzer.run(instructions)
         # 3. Print the results
         display_issues(issues, output_format=format, show_explanations=explain)
-        # Exit with 1 if issues were found, 0 otherwise
+
         sys.exit(1 if issues else 0)
 
     except IOError as e:
@@ -82,6 +84,37 @@ def lint(dockerfile_path: str, explain: bool, format: str) -> None:
     except Exception as e:
         console.print("[bold red]An unexpected error occurred during analysis:[/bold red]", e)
         sys.exit(2)
+
+@cli.command()
+@click.argument("dockerfile_path", type=click.Path(exists=True, dir_okay=False, resolve_path=True))
+def optimize(dockerfile_path: str) -> None:
+    """Optimizes a Dockerfile and prints the new version."""
+    console.print(f"🛠️  Optimizing Dockerfile at: [cyan]{dockerfile_path}[/cyan]")
+    content = read_file_with_autodetect(dockerfile_path)
+    if content is None:
+        sys.exit(2)
+
+    parser = DockerfileParser()
+    instructions = parser.parse(content)
+
+    optimizer = DockerfileOptimizer()
+    result = optimizer.optimize(instructions)
+
+    if not result.applied_optimizations:
+        console.print("\n[bold green]✅ No optimizable issues found.[/bold green]")
+    else:
+
+        console.print("\n[bold]✨ Optimizations applied:[/bold]")
+        for change in result.applied_optimizations:
+            console.print(f"  - {change}")
+        
+        console.print("\n[bold]New Optimized Dockerfile:[/bold]")
+        
+        # Create a Panel for a nice visual block
+        new_dockerfile_content = "\n".join([ins.original for ins in result.optimized_instructions])
+        console.print(Panel(new_dockerfile_content, border_style="green"))
+
+    sys.exit(0)
 
 
 if __name__ == "__main__":
