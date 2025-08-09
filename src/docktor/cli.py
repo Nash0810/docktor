@@ -71,12 +71,16 @@ def lint(dockerfile_path: str, explain: bool, format: str) -> None:
         # 2. Run the analysis
         issues = analyzer.run(instructions)
         # 3. Print the results
-        display_issues(issues, output_format=format)
+        display_issues(issues, output_format=format, show_explanations=explain)
         # Exit with 1 if issues were found, 0 otherwise
         sys.exit(1 if issues else 0)
 
+    except IOError as e:
+
+        console.print("[bold red]Error:[/bold red] Could not read file:", e)
+        sys.exit(2)
     except Exception as e:
-        console.print(f"[bold red]An unexpected error occurred during analysis:[/bold red] {e}")
+        console.print("[bold red]An unexpected error occurred during analysis:[/bold red]", e)
         sys.exit(2)
 
 

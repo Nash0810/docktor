@@ -11,13 +11,17 @@ class Rule(ABC):
     @property
     @abstractmethod
     def id(self) -> str:
-        """A unique ID for the rule."""
+
         pass
 
     @property
     @abstractmethod
     def description(self) -> str:
-        """A short, user-facing description of the rule."""
+        pass
+
+    @property
+    @abstractmethod
+    def explanation(self) -> str:
         pass
 
     @abstractmethod

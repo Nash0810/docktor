@@ -1,23 +1,42 @@
-from docktor.rules.base import Rule
-from docktor.analyzer import Issue
-from docktor.parser import DockerInstruction
 from typing import List
 
-class PinnedBaseImageRule(Rule):
-    id = "SEC001"
-    description = "Base images should be pinned to specific versions"
+from .base import Rule, Issue, DockerInstruction
+from ..parser import InstructionType
+
+
+class AddInsteadOfCopyRule(Rule):
+
+    @property
+    def id(self) -> str:
+        return "SEC001"
+
+    @property
+    def description(self) -> str:
+        return "Use COPY instead of ADD unless you need ADD's specific features."
+
+    @property
+    def explanation(self) -> str:
+        return (
+            "The 'ADD' instruction has magic features like remote URL downloads and "
+            "automatic tarball extraction. This can introduce security vulnerabilities "
+            "if the source is compromised. 'COPY' is more transparent and safer as it "
+            "only copies local files."
+        )
+
 
     def check(self, instructions: List[DockerInstruction]) -> List[Issue]:
-        issues = []
-        for instr in instructions:
-            if instr.type.name == "FROM" and 'latest' in ' '.join(instr.arguments).lower():
-                issues.append(Issue(
-                    rule_id=self.id,
-                    severity="warning",
-                    line_number=instr.line_number,
-                    message=f"Base image is not pinned: {' '.join(instr.arguments)}",
-                    explanation="Unpinned base images can lead to non-reproducible builds.",
-                    fix_suggestion="Use a specific tag like python:3.8-slim",
-                    fix_confidence=0.9
-                ))
+        issues: List[Issue] = []
+        for instruction in instructions:
+            if instruction.instruction_type == InstructionType.ADD:
+                issues.append(
+                    Issue(
+                        rule_id=self.id,
+                        message="ADD is used. Prefer COPY for clarity and security.",
+                        line_number=instruction.line_number,
+                        severity="warning",
+                        explanation=self.explanation,  # <-- Pass the explanation
+                        fix_suggestion="Replace 'ADD' with 'COPY' if you are only copying local files."
+                    )
+                )
+
         return issues

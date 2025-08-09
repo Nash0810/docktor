@@ -6,12 +6,13 @@ import dataclasses
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
+from rich.text import Text 
 
 from .types import Issue
 
 console = Console()
 
-def display_issues(issues: List[Issue], output_format: str = "text") -> None:
+def display_issues(issues: List[Issue], output_format: str = "text", show_explanations: bool = False) -> None:
     """
     Displays issues in the specified format (text or json).
     """
@@ -30,7 +31,7 @@ def display_issues(issues: List[Issue], output_format: str = "text") -> None:
     summary_text = (
         f"⚠️  [yellow]{severity_counts.get('warning', 0)} warnings[/yellow]\n"
         f"ℹ️  [blue]{severity_counts.get('info', 0)} info[/blue]\n"
-        f"❌ [red]{severity_counts.get('error', 0)} errors[/red]"
+        f"❌  [red]{severity_counts.get('error', 0)} errors[/red]"
     )
     console.print(Panel(summary_text, title="[bold]Issues Found[/bold]", expand=False))
 
@@ -55,3 +56,21 @@ def display_issues(issues: List[Issue], output_format: str = "text") -> None:
         )
 
     console.print(table)
+
+    if show_explanations:
+        console.print("\n[bold]💡 Explanations[/bold]")
+        for issue in sorted(issues, key=lambda i: i.rule_id):
+            text_content = Text()
+            text_content.append(f"{issue.rule_id}: ", style="bold cyan")
+            text_content.append(issue.message)
+            text_content.append("\n\n")
+            text_content.append(issue.explanation) 
+            
+            console.print(
+                Panel(
+                    text_content,
+                    title=f"Explanation for Rule {issue.rule_id}",
+                    border_style="green",
+                    expand=False
+                )
+            )

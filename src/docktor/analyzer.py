@@ -7,6 +7,8 @@ from .rules.base import Rule
 
 from .rules import best_practices
 from .types import Issue
+from .rules import performance
+from .rules import security
 
 @dataclass
 class Issue:

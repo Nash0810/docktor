@@ -17,19 +17,26 @@ class PinnedVersionRule(Rule):
     def description(self) -> str:
         return "Base image should have a pinned version, not 'latest' or no tag."
 
+    @property
+    def explanation(self) -> str:
+        return (
+            "Using 'latest' or no tag makes your builds non-deterministic. "
+            "A new version of the image could be pushed at any time, potentially "
+            "introducing breaking changes or vulnerabilities into your application."
+        )
+
     def check(self, instructions: List[DockerInstruction]) -> List[Issue]:
         issues: List[Issue] = []
         for instruction in instructions:
             if instruction.instruction_type == InstructionType.FROM:
                 image_name = instruction.value
-                # Check if it uses the 'latest' tag or has no tag at all
                 if ":" not in image_name or image_name.endswith(":latest"):
                     issues.append(
                         Issue(
                             rule_id=self.id,
                             message=f"Base image '{image_name}' uses an unpinned version.",
                             line_number=instruction.line_number,
-                            severity="warning",
+                            explanation=self.explanation,  # <-- Pass the explanation
                             fix_suggestion=f"Pin the image to a specific version. E.g., '{image_name.split(':')[0]}:3.11-slim'."
                         )
                     )
