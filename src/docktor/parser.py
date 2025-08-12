@@ -32,7 +32,7 @@ class DockerInstruction:
     line_number: int
     instruction_type: InstructionType
     original: str
-    value: str # The content of the line after the instruction keyword
+    value: str 
 
 
 
@@ -40,15 +40,7 @@ class DockerfileParser:
     """Parses a Dockerfile's content into a list of structured instructions."""
 
     def parse(self, dockerfile_content: str) -> List[DockerInstruction]:
-        """
-        Parses the full content of a Dockerfile.
-
-        Args:
-            dockerfile_content: A string containing the Dockerfile contents.
-
-        Returns:
-            A list of DockerInstruction objects.
-        """
+   
         instructions: List[DockerInstruction] = []
         lines = dockerfile_content.splitlines()
         
@@ -63,14 +55,14 @@ class DockerfileParser:
             if not stripped_line:
                 continue # Skip empty lines
 
-            # If a line ends with a backslash, it's a multi-line command
+
             if stripped_line.endswith('\\'):
                 if not instruction_buffer:
                     start_line_number = line_number
                 instruction_buffer.append(stripped_line[:-1].strip())
                 continue
             
-            # If we are in a buffer, this line is the end of it
+
             if instruction_buffer:
                 instruction_buffer.append(stripped_line)
                 full_instruction_line = " ".join(instruction_buffer)

@@ -60,7 +60,7 @@ def cli() -> None:
 
 def lint(dockerfile_path: str, explain: bool, format: str) -> None:
     """Analyze a Dockerfile for issues and optimizations."""
-    # ... (The first part of the function remains the same) ...
+    
     console.print(f"🔍 Analyzing Dockerfile at: [cyan]{dockerfile_path}[/cyan]")
     content = read_file_with_autodetect(dockerfile_path)
     if content is None:
@@ -90,35 +90,40 @@ def lint(dockerfile_path: str, explain: bool, format: str) -> None:
 
 @cli.command()
 @click.argument("dockerfile_path", type=click.Path(exists=True, dir_okay=False, resolve_path=True))
-def optimize(dockerfile_path: str) -> None:
+@click.option("--raw", is_flag=True, default=False, help="Print the raw, clean Dockerfile content to the terminal.")
+def optimize(dockerfile_path: str, raw: bool) -> None:
     """Optimizes a Dockerfile and prints the new version."""
-    console.print(f"🛠️  Optimizing Dockerfile at: [cyan]{dockerfile_path}[/cyan]")
+
     content = read_file_with_autodetect(dockerfile_path)
     if content is None:
         sys.exit(2)
 
+    if sys.stdout.isatty() and not raw:
+        console.print(f"🛠️  Optimizing Dockerfile at: [cyan]{dockerfile_path}[/cyan]")
+    
     parser = DockerfileParser()
     instructions = parser.parse(content)
 
     optimizer = DockerfileOptimizer()
     result = optimizer.optimize(instructions)
 
-    if not result.applied_optimizations:
-        console.print("\n[bold green]✅ No optimizable issues found.[/bold green]")
-    else:
+    new_dockerfile_content = "\n".join([ins.original for ins in result.optimized_instructions])
 
-        console.print("\n[bold]✨ Optimizations applied:[/bold]")
-        for change in result.applied_optimizations:
-            console.print(f"  - {change}")
-        
-        console.print("\n[bold]New Optimized Dockerfile:[/bold]")
-        
-        # Create a Panel for a nice visual block
-        new_dockerfile_content = "\n".join([ins.original for ins in result.optimized_instructions])
-        console.print(Panel(new_dockerfile_content, border_style="green"))
+    
+    if sys.stdout.isatty() and not raw:
+        if not result.applied_optimizations:
+            console.print("\n[bold green]✅ No optimizable issues found.[/bold green]")
+        else:
+            console.print("\n[bold]✨ Optimizations applied:[/bold]")
+            for change in result.applied_optimizations:
+                console.print(f"  - {change}")
+            
+            console.print("\n[bold]New Optimized Dockerfile:[/bold]")
+            console.print(Panel(new_dockerfile_content, border_style="green"))
+    else:
+        print(new_dockerfile_content)
 
     sys.exit(0)
-
 @cli.command()
 @click.argument("original_dockerfile", type=click.Path(exists=True, dir_okay=False, resolve_path=True))
 @click.argument("optimized_dockerfile", type=click.Path(exists=True, dir_okay=False, resolve_path=True))
@@ -150,12 +155,19 @@ def benchmark(original_dockerfile: str, optimized_dockerfile: str):
         if len(results) == 2:
             original_res, optimized_res = results[0], results[1]
             
-            # Helper for calculating percentage change
+            
             def get_improvement(original, optimized):
-                if original > 0 and optimized > 0:
-                    change = ((original - optimized) / original) * 100
-                    return f"-[red]{change:.1f}%[/red]" if change > 0 else f"+[green]{-change:.1f}%[/green]"
-                return "N/A"
+                if original == 0 or optimized == 0:
+                    return "N/A"
+                
+                change = ((original - optimized) / original) * 100
+                
+                if change > 0.01: 
+                    return f"[green]{change:.1f}%[/green]"
+                elif change < -0.01: 
+                    return f"+[red]{-change:.1f}%[/red]"
+                else: 
+                    return "0.0%"
 
             table.add_row("Image Size (MB)", f"{original_res.image_size_mb}", f"{optimized_res.image_size_mb}", get_improvement(original_res.image_size_mb, optimized_res.image_size_mb))
             table.add_row("Layer Count", f"{original_res.layer_count}", f"{optimized_res.layer_count}", get_improvement(original_res.layer_count, optimized_res.layer_count))

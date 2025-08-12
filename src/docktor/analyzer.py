@@ -16,7 +16,7 @@ class Issue:
     rule_id: str
     message: str
     line_number: int
-    severity: str = "warning"  # e.g., 'error', 'warning', 'info'
+    severity: str = "warning"  
     explanation: Optional[str] = None
     fix_suggestion: Optional[str] = None
 
@@ -32,15 +32,7 @@ class Analyzer:
         return [subclass() for subclass in Rule.__subclasses__()]
 
     def run(self, instructions: List[DockerInstruction]) -> List[Issue]:
-        """
-        Runs all loaded rules against the provided instructions.
-
-        Args:
-            instructions: The list of instructions from the DockerfileParser.
-
-        Returns:
-            A list of all issues found by all rules.
-        """
+ 
         all_issues: List[Issue] = []
         print(f"🔬 Running {len(self._rules)} rules...")
         for rule in self._rules:
