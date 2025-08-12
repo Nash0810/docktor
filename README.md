@@ -13,10 +13,6 @@
   <a href="https://pypi.org/project/docktor/"><img src="https://img.shields.io/pypi/pyversions/docktor" alt="Python Versions"></a>
 </p>
 
----
-
----
-
 ## ✨ Features
 
 - **Comprehensive Linter** – Checks against 19+ rules for performance, security, and best practices.
@@ -24,8 +20,6 @@
 - **Educational Explanations** – Understand _why_ a suggestion is made.
 - **Empirical Benchmarking** – See image size, build time, and layer count improvements.
 - **CI/CD Friendly** – Output in human-readable tables (Rich) or machine-readable JSON.
-
----
 
 ## 🚀 Quick Start
 
@@ -70,8 +64,6 @@ docktor optimize Dockerfile --raw > Dockerfile.optimized
 docktor benchmark Dockerfile Dockerfile.optimized
 ```
 
----
-
 ## ⚙️ Implemented Rules
 
 | Rule ID | Description                                    | Category      | Auto-Optimized?    |
@@ -96,17 +88,11 @@ docktor benchmark Dockerfile Dockerfile.optimized
 | SEC003  | Potential secrets are in ENV variables         | Security      | No                 |
 | SEC004  | COPY is used without --chown for non-root user | Security      | No                 |
 
----
-
 ## 🤝 Contributing
 
 Contributions, issues, and feature requests are welcome!
 Check out the [issues page](https://github.com/Nash0810/docktor/issues) to get started.
 
----
-
 ## 📄 License
 
 This project is licensed under the [MIT License](LICENSE).
-
----
