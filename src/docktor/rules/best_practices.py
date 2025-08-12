@@ -169,3 +169,191 @@ class MissingLabelRule(Rule):
             )
             
         return issues
+    
+class RunInScratchImageRule(Rule):
+    """
+    Rule to detect RUN commands in a 'scratch' image, which will always fail.
+    """
+
+    @property
+    def id(self) -> str:
+        return "BP005"
+
+    @property
+    def description(self) -> str:
+        return "RUN command cannot be used in a 'scratch' image."
+
+    @property
+    def explanation(self) -> str:
+        return (
+            "The 'FROM scratch' instruction creates a completely empty image with no "
+            "shell or any other binaries. Because of this, any 'RUN' command is "
+            "guaranteed to fail as there is no shell (like /bin/sh) to execute it. "
+            "You can only use instructions like COPY or CMD in a scratch image."
+        )
+
+    def check(self, instructions: List[DockerInstruction]) -> List[Issue]:
+        issues: List[Issue] = []
+        
+    
+        first_from = next((inst for inst in instructions if inst.instruction_type == InstructionType.FROM), None)
+        
+        if first_from and first_from.value.strip().lower() == "scratch":
+         
+            for instruction in instructions:
+                if instruction.line_number > first_from.line_number:
+                    if instruction.instruction_type == InstructionType.RUN:
+                        issues.append(
+                            Issue(
+                                rule_id=self.id,
+                                message="A 'RUN' instruction cannot be used after 'FROM scratch'.",
+                                line_number=instruction.line_number,
+                           
+                                severity="error",
+                                explanation=self.explanation,
+                                fix_suggestion="Remove the RUN instruction or use a different base image that includes a shell."
+                            )
+                        )
+          
+                        break
+        return issues
+    
+class InvalidCopyFromRule(Rule):
+    """
+    Rule to detect COPY --from commands that refer to a non-existent stage.
+    """
+
+    @property
+    def id(self) -> str:
+        return "BP006"
+
+    @property
+    def description(self) -> str:
+        return "COPY --from must refer to a previously defined build stage."
+
+    @property
+    def explanation(self) -> str:
+        return (
+            "The '--from' flag in a 'COPY' or 'ADD' instruction must reference a "
+            "stage name that was previously defined using 'FROM <image> AS <stage_name>'. "
+            "Referring to a stage that does not exist is a syntax error that will "
+            "cause the Docker build to fail immediately."
+        )
+
+    def check(self, instructions: List[DockerInstruction]) -> List[Issue]:
+        issues: List[Issue] = []
+        defined_stages = set()
+
+        for instruction in instructions:
+            if instruction.instruction_type == InstructionType.FROM:
+               
+                parts = instruction.value.split()
+                if len(parts) > 2 and parts[1].upper() == "AS":
+                    defined_stages.add(parts[2])
+
+        
+        for instruction in instructions:
+            if (instruction.instruction_type == InstructionType.COPY or
+                    instruction.instruction_type == InstructionType.ADD):
+                
+                
+                for part in instruction.value.split():
+                    if part.lower().startswith("--from="):
+                        stage_name = part.split("=")[1]
+                        if stage_name not in defined_stages:
+                            issues.append(
+                                Issue(
+                                    rule_id=self.id,
+                                    message=f"COPY --from refers to a non-existent stage: '{stage_name}'.",
+                                    line_number=instruction.line_number,
+                                    severity="error",
+                                    explanation=self.explanation,
+                                    fix_suggestion="Ensure the stage name is spelled correctly and defined in a previous 'FROM ... AS ...' instruction."
+                                )
+                            )
+                        break 
+        return issues
+    
+class ShellFormCommandRule(Rule):
+    """
+    Rule to check for CMD/ENTRYPOINT instructions using the shell form
+    instead of the recommended exec form.
+    """
+
+    @property
+    def id(self) -> str:
+        return "BP007"
+
+    @property
+    def description(self) -> str:
+        return "Use the exec form of CMD/ENTRYPOINT for better signal handling."
+
+    @property
+    def explanation(self) -> str:
+        return (
+            "The 'shell form' of CMD or ENTRYPOINT (e.g., 'CMD my-app --arg') runs your "
+            "command inside a shell, which can prevent OS signals like SIGTERM from "
+            "reaching your application. This can lead to containers that do not shut "
+            "down gracefully. The 'exec form' (e.g., 'CMD [\"my-app\", \"--arg\"]') is "
+            "the recommended best practice as it handles signals correctly."
+        )
+
+    def check(self, instructions: List[DockerInstruction]) -> List[Issue]:
+        issues: List[Issue] = []
+        for instruction in instructions:
+            if (instruction.instruction_type == InstructionType.CMD or
+                    instruction.instruction_type == InstructionType.ENTRYPOINT):
+           
+                if not instruction.value.strip().startswith("["):
+                    issues.append(
+                        Issue(
+                            rule_id=self.id,
+                            message=f"'{instruction.instruction_type.value}' is using the shell form instead of the exec form.",
+                            line_number=instruction.line_number,
+                            severity="info",
+                            explanation=self.explanation,
+                            fix_suggestion=f"Convert to the exec form, e.g., {instruction.instruction_type.value} [\"{instruction.value.split()[0]}\", \"...\"]"
+                        )
+                    )
+        return issues
+    
+class WorkdirAbsoluteRule(Rule):
+    """
+    Rule to check that WORKDIR is using an absolute path.
+    """
+
+    @property
+    def id(self) -> str:
+        return "BP008"
+
+    @property
+    def description(self) -> str:
+        return "Use absolute paths for WORKDIR for clarity and reliability."
+
+    @property
+    def explanation(self) -> str:
+        return (
+            "Using a relative path with 'WORKDIR' can be ambiguous and lead to "
+            "unexpected behavior depending on the preceding instructions. Always "
+            "using an absolute path (one that starts with '/') makes your Dockerfile "
+            "more reliable, predictable, and easier for other developers to understand."
+        )
+
+    def check(self, instructions: List[DockerInstruction]) -> List[Issue]:
+        issues: List[Issue] = []
+        for instruction in instructions:
+            if instruction.instruction_type == InstructionType.WORKDIR:
+                path = instruction.value.strip()
+         
+                if not path.startswith("/") and not path.startswith("$"):
+                    issues.append(
+                        Issue(
+                            rule_id=self.id,
+                            message=f"WORKDIR path '{path}' is not absolute.",
+                            line_number=instruction.line_number,
+                            severity="info",
+                            explanation=self.explanation,
+                            fix_suggestion=f"Change the path to be absolute, e.g., '/{path}'."
+                        )
+                    )
+        return issues

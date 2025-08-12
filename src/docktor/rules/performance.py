@@ -364,3 +364,49 @@ class BroadCopyRule(Rule):
                             )
                         )
         return issues
+    
+class RedundantUpdateRule(Rule):
+    """
+    Rule to check for redundant 'apt-get update' commands.
+    """
+    UPDATE_COMMAND = "apt-get update"
+
+    @property
+    def id(self) -> str:
+        return "PERF007"
+
+    @property
+    def description(self) -> str:
+        return "Avoid redundant 'apt-get update' commands."
+
+    @property
+    def explanation(self) -> str:
+        return (
+            "Calling 'apt-get update' multiple times in a Dockerfile is inefficient. "
+            "The package lists only need to be updated once before the relevant "
+            "'apt-get install' commands. Each redundant call slows down the build "
+            "and can add unnecessary network overhead."
+        )
+
+    def check(self, instructions: List[DockerInstruction]) -> List[Issue]:
+        issues: List[Issue] = []
+        update_found = False
+
+        for instruction in instructions:
+            if instruction.instruction_type == InstructionType.RUN:
+                if self.UPDATE_COMMAND in instruction.value:
+                    if update_found:
+                        issues.append(
+                            Issue(
+                                rule_id=self.id,
+                                message="Redundant 'apt-get update' command found.",
+                                line_number=instruction.line_number,
+                                severity="info",
+                                explanation=self.explanation,
+                                fix_suggestion="Consolidate your 'apt-get update' calls into a single command."
+                            )
+                        )
+                    else:
+                       
+                        update_found = True
+        return issues

@@ -42,3 +42,38 @@ RUN pip install poetry
 
     # 3. Assert
     assert len(issues) == 0
+
+
+@pytest.mark.parametrize(
+    "dockerfile_content, should_find_issue, expected_message",
+    [
+        # Case 1: No USER instruction at all
+        ("FROM alpine", True, "No 'USER' instruction found."),
+        # Case 2: Last USER is explicitly root
+        ("FROM alpine\nUSER root", True, "Container is explicitly set to run as 'root' user."),
+        # Case 3: A non-root user is set (good case)
+        ("FROM alpine\nUSER myappuser", False, None),
+        # Case 4: Multiple USER instructions, last one is non-root (good case)
+        ("FROM alpine\nUSER root\nUSER myappuser", False, None),
+    ],
+)
+def test_analyzer_non_root_user_rule(dockerfile_content, should_find_issue, expected_message):
+    """
+    Tests the NonRootUserRule (SEC002) across multiple scenarios.
+    """
+    # Arrange & Act
+    parser = DockerfileParser()
+    instructions = parser.parse(dockerfile_content)
+    analyzer = Analyzer()
+    issues = analyzer.run(instructions)
+
+    # Assert
+    if should_find_issue:
+        # Find the specific issue we're looking for
+        sec002_issues = [issue for issue in issues if issue.rule_id == "SEC002"]
+        assert len(sec002_issues) == 1, "Expected to find a SEC002 issue, but didn't."
+        assert sec002_issues[0].message == expected_message
+    else:
+        # Assert that this specific issue was NOT found
+        sec002_issues = [issue for issue in issues if issue.rule_id == "SEC002"]
+        assert len(sec002_issues) == 0, "Found a SEC002 issue when none was expected."
