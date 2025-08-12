@@ -1,4 +1,4 @@
-from src.docktor.parser import DockerfileParser, InstructionType
+from docktor.parser import DockerfileParser, InstructionType
 
 
 def test_parse_simple_dockerfile():
