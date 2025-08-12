@@ -163,7 +163,7 @@ def benchmark(original_dockerfile: str, optimized_dockerfile: str):
                 change = ((original - optimized) / original) * 100
                 
                 if change > 0.01: 
-                    return f"[green]{change:.1f}%[/green]"
+                    return f"+[green]{change:.1f}%[/green]"
                 elif change < -0.01: 
                     return f"+[red]{-change:.1f}%[/red]"
                 else: 
