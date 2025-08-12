@@ -1,6 +1,6 @@
 import sys
 from typing import Literal, Optional
-
+import os
 import click
 import chardet  
 from rich.console import Console
@@ -93,12 +93,14 @@ def lint(dockerfile_path: str, explain: bool, format: str) -> None:
 @click.option("--raw", is_flag=True, default=False, help="Print the raw, clean Dockerfile content to the terminal.")
 def optimize(dockerfile_path: str, raw: bool) -> None:
     """Optimizes a Dockerfile and prints the new version."""
-
     content = read_file_with_autodetect(dockerfile_path)
     if content is None:
         sys.exit(2)
 
-    if sys.stdout.isatty() and not raw:
+  
+    is_interactive = sys.stdout.isatty() or os.getenv("DOCKTOR_FORCE_PRETTY")
+
+    if is_interactive and not raw:
         console.print(f"🛠️  Optimizing Dockerfile at: [cyan]{dockerfile_path}[/cyan]")
     
     parser = DockerfileParser()
@@ -109,8 +111,7 @@ def optimize(dockerfile_path: str, raw: bool) -> None:
 
     new_dockerfile_content = "\n".join([ins.original for ins in result.optimized_instructions])
 
-    
-    if sys.stdout.isatty() and not raw:
+    if is_interactive and not raw:
         if not result.applied_optimizations:
             console.print("\n[bold green]✅ No optimizable issues found.[/bold green]")
         else:
@@ -121,9 +122,13 @@ def optimize(dockerfile_path: str, raw: bool) -> None:
             console.print("\n[bold]New Optimized Dockerfile:[/bold]")
             console.print(Panel(new_dockerfile_content, border_style="green"))
     else:
+
         print(new_dockerfile_content)
 
     sys.exit(0)
+
+
+
 @cli.command()
 @click.argument("original_dockerfile", type=click.Path(exists=True, dir_okay=False, resolve_path=True))
 @click.argument("optimized_dockerfile", type=click.Path(exists=True, dir_okay=False, resolve_path=True))
