@@ -64,7 +64,7 @@ class DockerBenchmarker:
 
             except BuildError as e:
                 console.print(f"\n❌ Build failed for [cyan]'{image_tag}'[/cyan].")
-                
+
                 full_log = "".join([json.dumps(line) for line in e.build_log])
                 result.error_message = f"Build failed with error: {e.msg}\nFull log: {full_log}"
                 
