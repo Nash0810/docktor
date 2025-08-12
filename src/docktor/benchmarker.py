@@ -1,19 +1,22 @@
+# src/docktor/benchmarker.py
+
 import time
 import tempfile
 import pathlib
+import json
 import docker
 from docker.errors import BuildError, APIError
 from rich.console import Console
+
 from .types import BenchmarkResult
 
-
 console = Console()
+
 class DockerBenchmarker:
     """
     Handles building Docker images and collecting benchmark metrics.
     """
     def __init__(self):
-        
         try:
             self.client = docker.from_env()
             self.client.ping()
@@ -36,24 +39,20 @@ class DockerBenchmarker:
             start_time = time.monotonic()
             
             try:
-             
                 stream = self.client.api.build(
                     path=str(temp_dir),
                     tag=image_tag,
                     rm=True,
                     forcerm=True,
-                    decode=True 
+                    decode=True
                 )
                 
-               
                 for chunk in stream:
                     if 'stream' in chunk:
-                        print(chunk['stream'], end="")
+                        print(chunk['stream'].strip())
                     elif 'error' in chunk:
-                 
                         raise BuildError(chunk['error'], build_log=stream)
                 
-            
                 image = self.client.images.get(image_tag)
                 
                 end_time = time.monotonic()
@@ -65,8 +64,11 @@ class DockerBenchmarker:
 
             except BuildError as e:
                 console.print(f"\n❌ Build failed for [cyan]'{image_tag}'[/cyan].")
-               
-                result.error_message = "Build failed. See logs above for details."
+                
+                full_log = "".join([json.dumps(line) for line in e.build_log])
+                result.error_message = f"Build failed with error: {e.msg}\nFull log: {full_log}"
+                
+                console.print(f"[bold red]Error Details:[/bold red] {result.error_message}")
 
             finally:
                 if image:
