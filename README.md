@@ -76,6 +76,7 @@ docktor benchmark Dockerfile Dockerfile.optimized
 | BP006   | COPY --from refers to a non-existent stage     | Best Practice | No (error)         |
 | BP007   | CMD/ENTRYPOINT uses shell form                 | Best Practice | No                 |
 | BP008   | WORKDIR path is not absolute                   | Best Practice | No                 |
+| BP009   | apt-get install is missing apt-get update      | Best Practice | ye(error)          |
 | PERF001 | Consecutive RUN commands can be merged         | Performance   | Yes                |
 | PERF002 | apt-get install is missing cache cleanup       | Performance   | Yes                |
 | PERF003 | Broad COPY is used before dependency install   | Performance   | No                 |
