@@ -20,11 +20,12 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      - name: Switch Docker to Linux containers (Windows only)
+        if: matrix.os == 'windows-latest'
+        uses: crazy-max/ghaction-docker-daemon@v0
+        with:
+          daemon-json: '{ "exec-opts": ["native.cgroupdriver=cgroupfs"], "storage-driver": "overlay2" }'
+          experimental: true
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
