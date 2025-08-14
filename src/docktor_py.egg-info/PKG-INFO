@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: docktor-py
-Version: 0.1.0
+Version: 0.1.1
 Summary: A smart Dockerfile linter, optimizer, and explainer.
 Author-email: Nash Correia <nashco9900@gmail.com>
 License: MIT License
@@ -73,7 +73,7 @@ Dynamic: license-file
 
 ## ✨ Features
 
-- **Comprehensive Linter** – Checks against 19+ rules for performance, security, and best practices.
+- **Comprehensive Linter** – Checks against 20+ rules for performance, security, and best practices.
 - **Intelligent Optimizer** – Combines `RUN` commands, cleans up apt-get cache, replaces `ADD` with `COPY`, etc.
 - **Educational Explanations** – Understand _why_ a suggestion is made.
 - **Empirical Benchmarking** – See image size, build time, and layer count improvements.
@@ -86,7 +86,7 @@ Dynamic: license-file
 Requires Python **3.8+** and Docker.
 
 ```bash
-pip install docktor
+pip install docktor-py
 ```
 
 ### Usage
