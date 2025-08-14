@@ -10,7 +10,7 @@ authors = [
 ]
 description = "Smart Dockerfile linter, optimizer, and explainer."
 readme = "docs/README.md"
-license = { file="LICENSE" } # We'll add a LICENSE file later
+license = { file="LICENSE" } 
 requires-python = ">=3.8"
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -30,6 +30,7 @@ dependencies = [
     "rich>=13.0.0",
     "chardet>=5.0.0",
     "docker>=6.0.0",
+    'pypiwin32>=223; sys_platform == "win32"',
 ]
 
 [project.urls]

@@ -1,3 +1,5 @@
+# .github/workflows/ci.yml
+
 name: CI/CD
 
 on: [push, pull_request]
@@ -11,6 +13,7 @@ jobs:
     name: Test with Python ${{ matrix.python-version }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         python-version: ["3.8", "3.9", "3.10", "3.11"]
@@ -18,6 +21,14 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v3
+
+      - name: Switch Docker to Linux containers (Windows only)
+
+        if: matrix.os == 'windows-latest'
+
+        run: |
+          & "C:\Program Files\Docker\Docker\DockerCli.exe" -SwitchDaemon
+        shell: powershell
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4

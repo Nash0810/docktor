@@ -3,8 +3,8 @@ Name: docktor
 Version: 0.1.0
 Summary: Smart Dockerfile linter, optimizer, and explainer.
 Author-email: Nash Correia <nashcorreia08@gmail.com>
-Project-URL: Homepage, https://github.com/your-username/docktor
-Project-URL: Bug Tracker, https://github.com/your-username/docktor/issues
+Project-URL: Homepage, https://github.com/Nash0810docktor
+Project-URL: Bug Tracker, https://github.com/Nash0810/docktor/issues
 Classifier: Development Status :: 3 - Alpha
 Classifier: Environment :: Console
 Classifier: Intended Audience :: Developers
@@ -22,6 +22,7 @@ Requires-Dist: click>=8.1.0
 Requires-Dist: rich>=13.0.0
 Requires-Dist: chardet>=5.0.0
 Requires-Dist: docker>=6.0.0
+Requires-Dist: pypiwin32>=223; sys_platform == "win32"
 Provides-Extra: dev
 Requires-Dist: pytest>=7.0; extra == "dev"
 Requires-Dist: pytest-cov>=4.0; extra == "dev"

@@ -44,6 +44,10 @@ class DockerfileOptimizer:
         optimized_instructions, sudo_changes = self._remove_unnecessary_sudo(optimized_instructions)
         all_changes.extend(sudo_changes)
 
+        # 8. Prepend 'apt-get update' where necessary
+        optimized_instructions, update_changes = self._prepend_apt_get_update(optimized_instructions)
+        all_changes.extend(update_changes)
+
         return OptimizationResult(
             optimized_instructions=optimized_instructions,
             applied_optimizations=all_changes,
@@ -86,27 +90,36 @@ class DockerfileOptimizer:
         return new_instructions, changes_made
 
     def _pin_untagged_from_image(self, instructions: List[DockerInstruction]) -> (List[DockerInstruction], List[str]):
-        """Finds FROM instructions without a tag and pins them to 'latest'."""
-        new_instructions: List[DockerInstruction] = []
-        changes_made: List[str] = []
+            """Finds FROM instructions without a tag and pins them to 'latest'."""
+            new_instructions: List[DockerInstruction] = []
+            changes_made: List[str] = []
 
-        for instruction in instructions:
-            if instruction.instruction_type == InstructionType.FROM and ":" not in instruction.value:
-                original_image = instruction.value
-                pinned_image = f"{original_image}:latest"
-                
-                new_instruction = DockerInstruction(
-                    line_number=instruction.line_number,
-                    instruction_type=InstructionType.FROM,
-                    original=f"FROM {pinned_image}",
-                    value=pinned_image
-                )
-                new_instructions.append(new_instruction)
-                changes_made.append(f"Pinned untagged base image '{original_image}' to 'latest' at line {instruction.line_number}.")
-            else:
-                new_instructions.append(instruction)
-        
-        return new_instructions, changes_made
+            for instruction in instructions:
+
+                if instruction.instruction_type == InstructionType.FROM and instruction.tag is None:
+
+                    original_image_name = instruction.image
+                    pinned_image_value = f"{original_image_name}:latest"
+                    
+                    
+                    if instruction.alias:
+                        pinned_image_value += f" as {instruction.alias}"
+
+                    new_instruction = DockerInstruction(
+                        line_number=instruction.line_number,
+                        instruction_type=InstructionType.FROM,
+                        original=f"FROM {pinned_image_value}",
+                        value=pinned_image_value,
+                        image=instruction.image,
+                        tag="latest",
+                        alias=instruction.alias
+                    )
+                    new_instructions.append(new_instruction)
+                    changes_made.append(f"Pinned untagged base image '{original_image_name}' to 'latest' at line {instruction.line_number}.")
+                else:
+                    new_instructions.append(instruction)
+            
+            return new_instructions, changes_made
 
     def _clean_apt_get_installs(self, instructions: List[DockerInstruction]) -> (List[DockerInstruction], List[str]):
         """Finds RUN apt-get installs and appends cache cleanup if missing."""
@@ -246,6 +259,31 @@ class DockerfileOptimizer:
                 changes_made.append(f"Removed unnecessary 'sudo' from RUN at line {instruction.line_number}.")
             else:
                 
+                new_instructions.append(instruction)
+        
+        return new_instructions, changes_made
+    
+    def _prepend_apt_get_update(self, instructions: List[DockerInstruction]) -> (List[DockerInstruction], List[str]):
+        """Finds RUN apt-get installs without update and prepends it."""
+        new_instructions: List[DockerInstruction] = []
+        changes_made: List[str] = []
+
+        for instruction in instructions:
+            if (instruction.instruction_type == InstructionType.RUN and
+                    "apt-get install" in instruction.value and
+                    "apt-get update" not in instruction.value):
+
+                new_value = f"apt-get update && {instruction.value.strip()}"
+                
+                new_instruction = DockerInstruction(
+                    line_number=instruction.line_number,
+                    instruction_type=InstructionType.RUN,
+                    original=f"RUN {new_value}",
+                    value=new_value
+                )
+                new_instructions.append(new_instruction)
+                changes_made.append(f"Prepended 'apt-get update' to RUN at line {instruction.line_number}.")
+            else:
                 new_instructions.append(instruction)
         
         return new_instructions, changes_made

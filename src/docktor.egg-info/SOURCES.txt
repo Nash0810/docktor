@@ -1,10 +1,8 @@
+README.md
 pyproject.toml
-docs/README.md
-src/docktor/__init__.py
 src/docktor/analyzer.py
 src/docktor/benchmarker.py
 src/docktor/cli.py
-src/docktor/explainer.py
 src/docktor/optimizer.py
 src/docktor/parser.py
 src/docktor/reporter.py
@@ -15,12 +13,12 @@ src/docktor.egg-info/dependency_links.txt
 src/docktor.egg-info/entry_points.txt
 src/docktor.egg-info/requires.txt
 src/docktor.egg-info/top_level.txt
-src/docktor/rules/__init__.py
 src/docktor/rules/base.py
 src/docktor/rules/best_practices.py
 src/docktor/rules/performance.py
 src/docktor/rules/security.py
 tests/test_analyzer.py
-tests/test_integration.py
+tests/test_benchmarker.py
+tests/test_cli.py
 tests/test_optimizer.py
 tests/test_parser.py

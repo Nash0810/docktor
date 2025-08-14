@@ -357,3 +357,46 @@ class WorkdirAbsoluteRule(Rule):
                         )
                     )
         return issues
+    
+class AptGetUpdateBeforeInstallRule(Rule):
+    """
+    Rule to ensure 'apt-get update' is run in the same command as 'apt-get install'.
+    """
+
+    @property
+    def id(self) -> str:
+        return "BP009"
+
+    @property
+    def description(self) -> str:
+        return "'apt-get install' should be preceded by 'apt-get update' in the same RUN command."
+
+    @property
+    def explanation(self) -> str:
+        return (
+            "Base images often have outdated package lists. Running 'apt-get install' "
+            "without first running 'apt-get update' in the same command can lead to "
+            "build failures if the package manager cannot locate the requested packages. "
+            "Combining them with '&&' ensures the package lists are always fresh for "
+            "the installation step."
+        )
+
+    def check(self, instructions: List[DockerInstruction]) -> List[Issue]:
+        issues: List[Issue] = []
+        for instruction in instructions:
+            if instruction.instruction_type == InstructionType.RUN:
+            
+                if "apt-get install" in instruction.value:
+                 
+                    if "apt-get update" not in instruction.value:
+                        issues.append(
+                            Issue(
+                                rule_id=self.id,
+                                message="RUN with 'apt-get install' is missing 'apt-get update'.",
+                                line_number=instruction.line_number,
+                                severity="error",
+                                explanation=self.explanation,
+                                fix_suggestion="Add 'apt-get update &&' before your 'apt-get install' command."
+                            )
+                        )
+        return issues
