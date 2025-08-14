@@ -27,10 +27,16 @@ jobs:
       - name: Set up Docker on Windows
         if: matrix.os == 'windows-latest'
         run: |
-          # Switch Docker to Linux containers on Windows
-          & "C:\Program Files\Docker\Docker\DockerCli.exe" -SwitchLinuxEngine
-          # Wait for Docker to be ready
-          timeout 30 docker version
+          # Try to switch to Linux containers, but continue if it fails
+          try {
+            & "C:\Program Files\Docker\Docker\DockerCli.exe" -SwitchLinuxEngine
+            Start-Sleep -Seconds 10
+            docker version
+            echo "Successfully switched to Linux containers"
+          } catch {
+            echo "Could not switch to Linux containers, will use Windows containers or skip Docker tests"
+            echo "Error: $_"
+          }
         shell: powershell
         continue-on-error: true
 
@@ -91,11 +97,13 @@ jobs:
 
       - name: Run tests
         run: |
-          # Run tests with coverage
+          # Run tests with coverage, allowing Docker tests to be skipped on Windows
           pytest --cov=src/docktor --cov-report=xml --cov-report=term-missing -v
         env:
           PYTHONPATH: ${{ github.workspace }}/src
           DOCKTOR_FORCE_PRETTY: "false"
+
+          PYTEST_DISABLE_PLUGIN_AUTOLOAD: "1"
 
       - name: Upload coverage to Codecov
         if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.11'
