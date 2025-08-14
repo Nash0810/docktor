@@ -20,13 +20,11 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
 
-      - name: Switch Docker to Linux containers
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
 
-        if: matrix.os == 'windows-latest'
-
-        run: |
-          & "C:\Program Files\Docker\Docker\resources\bin\docker.exe" "env" "--switch-daemon"
-        shell: powershell
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
