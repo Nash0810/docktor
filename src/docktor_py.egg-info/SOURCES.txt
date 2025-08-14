@@ -1,3 +1,4 @@
+LICENSE
 README.md
 pyproject.toml
 src/docktor/analyzer.py
@@ -7,16 +8,16 @@ src/docktor/optimizer.py
 src/docktor/parser.py
 src/docktor/reporter.py
 src/docktor/types.py
-src/docktor.egg-info/PKG-INFO
-src/docktor.egg-info/SOURCES.txt
-src/docktor.egg-info/dependency_links.txt
-src/docktor.egg-info/entry_points.txt
-src/docktor.egg-info/requires.txt
-src/docktor.egg-info/top_level.txt
 src/docktor/rules/base.py
 src/docktor/rules/best_practices.py
 src/docktor/rules/performance.py
 src/docktor/rules/security.py
+src/docktor_py.egg-info/PKG-INFO
+src/docktor_py.egg-info/SOURCES.txt
+src/docktor_py.egg-info/dependency_links.txt
+src/docktor_py.egg-info/entry_points.txt
+src/docktor_py.egg-info/requires.txt
+src/docktor_py.egg-info/top_level.txt
 tests/test_analyzer.py
 tests/test_benchmarker.py
 tests/test_cli.py
