@@ -1,0 +1,33 @@
+name: "Docktor Linter"
+description: "Optimize and Lint Dockerfiles using Docktor - A Smart Dockerfile Linter & Optimizer"
+author: "Nash Correia"
+branding:
+  icon: "anchor"
+  color: "blue"
+inputs:
+  dockerfile:
+    description: "Path to the Dockerfile to lint"
+    required: false
+    default: "Dockerfile"
+  explain:
+    description: "Show detailed explanations for each issue"
+    required: false
+    default: "false"
+  format:
+    description: "Output format: 'text' or 'json'"
+    required: false
+    default: "text"
+runs:
+  using: "composite"
+  steps:
+    - name: Install Docktor
+      run: pip install --quiet docktor-py
+      shell: bash
+    - name: Run Docktor Linter
+      run: |
+        if [ "${{ inputs.explain }}" = "true" ]; then
+          docktor lint "${{ inputs.dockerfile }}" --explain --format "${{ inputs.format }}"
+        else
+          docktor lint "${{ inputs.dockerfile }}" --format "${{ inputs.format }}"
+        fi
+      shell: bash

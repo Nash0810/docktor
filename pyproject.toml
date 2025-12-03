@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "docktor-py"
-version = "0.1.1"
+version = "0.2.0"
 authors = [
   { name = "Nash Correia", email = "nashco9900@gmail.com" },
 ]
@@ -29,6 +29,7 @@ classifiers = [
 dependencies = [
     "click>=8.1.0",
     "rich>=13.0.0",
+  "requests>=2.0.0",
     "chardet>=5.0.0",
     "docker>=6.0.0",
     'pypiwin32>=223; sys_platform == "win32"',

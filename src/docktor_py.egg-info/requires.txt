@@ -1,5 +1,6 @@
 click>=8.1.0
 rich>=13.0.0
+requests>=2.0.0
 chardet>=5.0.0
 docker>=6.0.0
 

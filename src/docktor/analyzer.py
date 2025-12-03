@@ -9,6 +9,7 @@ from .rules import best_practices
 from .types import Issue
 from .rules import performance
 from .rules import security
+from .rules import registry
 
 @dataclass
 class Issue:
