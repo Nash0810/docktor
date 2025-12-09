@@ -9,8 +9,8 @@
 <p align="center">
   <a href="https://pypi.org/project/docktor/"><img src="https://img.shields.io/pypi/v/docktor.svg" alt="PyPI version"></a>
   <a href="https://github.com/Nash0810/docktor/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License"></a>
-  <a href="https://github.com/Nash0810/docktor/actions"><img src="https://github.com/Nash0810/docktor/workflows/CI/badge.svg" alt="Build Status"></a>
-  <a href="https://pypi.org/project/docktor/"><img src="https://img.shields.io/pypi/pyversions/docktor" alt="Python Versions"></a>
+<a href="https://github.com/Nash0810/docktor/actions"><img src="https://github.com/Nash0810/docktor/actions/workflows/ci.yml/badge.svg" alt="Build Status"></a>
+  <a href="https://pypi.org/project/docktor-py/"><img src="https://img.shields.io/pypi/pyversions/docktor-py" alt="Python Versions"></a>
 </p>
 
 ## Overview
